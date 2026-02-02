@@ -2,8 +2,8 @@ name: PDF自动翻译+转MD
 on:
   push:
     paths:
-      - "input_pdf/**.pdf"  # 上传PDF触发
-  workflow_dispatch:  # 支持手动触发
+      - "input_pdf/**.pdf"
+  workflow_dispatch:
 
 jobs:
   translate:
@@ -12,31 +12,35 @@ jobs:
       - name: 拉取仓库代码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取完整历史，确保能提交
+          fetch-depth: 0
 
       - name: 安装Python环境
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+          cache: "pip"
 
-      - name: 安装依赖包
+      - name: 安装依赖包（修复siliconflow安装）
         run: |
           pip install --upgrade pip
-          pip install pdf2zh pymupdf markdownify siliconflow
+          # 基础依赖（适配最新版pdf2zh）
+          pip install pdf2zh==1.9.11 pymupdf==1.26.7 markdownify==1.2.2
+          # 硅基流动SDK：从GitHub源码安装（解决PyPI找不到的问题）
+          pip install git+https://github.com/siliconflow/siliconflow-python.git
 
       - name: 执行翻译脚本
         env:
           SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
         run: python translate_pdf.py
 
-      - name: 配置Git用户（关键！避免提交权限问题）
+      - name: 配置Git用户
         run: |
           git config --global user.name "CaoJinwei-ai"
-          git config --global user.email "你的GitHub绑定邮箱@xxx.com"  # 替换成你的邮箱
+          git config --global user.email "你的GitHub绑定邮箱"  # 替换成实际邮箱
 
-      - name: 上传翻译结果到仓库
+      - name: 自动提交翻译结果
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "✅ 自动翻译完成：新增PDF翻译结果"
-          file_pattern: "output/**"  # 只提交output文件夹
-          push_options: "--force"  # 确保推送成功
+          file_pattern: "output/**"
+          push_options: "--force"
