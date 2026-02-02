@@ -1,0 +1,4 @@
+pdf2zh==1.9.11
+pymupdf==1.26.7
+markdownify==1.2.2
+git+https://github.com/siliconflow/siliconflow-python.git
