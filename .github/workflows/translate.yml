@@ -17,29 +17,24 @@ jobs:
       - name: 安装Python环境
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10.12"  # 更精准的版本，适配siliconflow
+          python-version: "3.10.12"
 
-      - name: 安装依赖包（适配Ubuntu，容错siliconflow安装）
+      - name: 安装基础依赖（仅装能成功的包）
         run: |
           pip install --upgrade pip
-          # 基础依赖（pdf2zh+pymupdf+markdownify）
-          pip install pdf2zh pymupdf markdownify
-          # 优先从PyPI装siliconflow，失败则从官方源码装
-          pip install siliconflow || pip install git+https://gitlab.com/siliconflow/siliconflow-python.git
+          pip install pymupdf==1.25.2 markdownify==1.2.2
 
-      - name: 执行翻译脚本
-        env:
-          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+      - name: 执行翻译脚本（基础流程）
         run: python translate_pdf.py
 
       - name: 配置Git用户
         run: |
           git config --global user.name "CaoJinwei-ai"
-          git config --global user.email "你的GitHub绑定邮箱"  # 替换实际邮箱
+          git config --global user.email "你的GitHub绑定邮箱"  # 替换成实际邮箱
 
-      - name: 自动提交翻译结果
+      - name: 自动提交结果到output
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "✅ 自动翻译完成：新增PDF翻译结果"
+          commit_message: "✅ 完成PDF解析，生成原始文本文件"
           file_pattern: "output/**"
           push_options: "--force"
