@@ -9,22 +9,22 @@ jobs:
   translate:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取仓库代码（确保拉取完整仓库）
+      - name: 拉取仓库代码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取完整历史，避免代码缺失
+          fetch-depth: 0
 
-      - name: 安装Python环境（关闭pip缓存，避免警告）
+      - name: 安装Python环境
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: 安装依赖包（修复siliconflow安装）
+      - name: 安装依赖包（解决版本冲突）
         run: |
           pip install --upgrade pip
-          # 基础依赖（适配最新版pdf2zh）
-          pip install pdf2zh==1.9.11 pymupdf==1.26.7 markdownify==1.2.2
-          # 硅基流动SDK：从GitHub源码安装
+          # 兼容版本组合：pdf2zh 1.9.11 + pymupdf 1.25.2
+          pip install pdf2zh==1.9.11 pymupdf==1.25.2 markdownify==1.2.2
+          # 安装硅基流动SDK（从源码）
           pip install git+https://github.com/siliconflow/siliconflow-python.git
 
       - name: 执行翻译脚本
@@ -35,7 +35,7 @@ jobs:
       - name: 配置Git用户
         run: |
           git config --global user.name "CaoJinwei-ai"
-          git config --global user.email "你的GitHub绑定邮箱"  # 替换实际邮箱
+          git config --global user.email "你的GitHub绑定邮箱"  # 替换成实际邮箱
 
       - name: 自动提交翻译结果
         uses: stefanzweifel/git-auto-commit-action@v5
