@@ -1,0 +1,34 @@
+name: PDF自动翻译+转MD
+on:
+  push:
+    paths:
+      - "input_pdf/**.pdf"  # 只有往input_pdf传PDF时触发
+  workflow_dispatch:  # 支持手动触发（可选）
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest  # 用Ubuntu系统运行
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+      
+      - name: 安装Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"  # 适配pdf2zh的Python版本
+      
+      - name: 安装依赖包
+        run: |
+          pip install --upgrade pip
+          pip install pdf2zh pymupdf markdownify siliconflow  # 安装所需库
+      
+      - name: 执行翻译脚本
+        env:
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}  # 读取GitHub Secrets里的API Key
+        run: python translate_pdf.py
+      
+      - name: 上传翻译结果到仓库
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "✅ 自动翻译完成：新增PDF翻译结果"
+          file_pattern: "output/**"  # 只提交output文件夹的内容
